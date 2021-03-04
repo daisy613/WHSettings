@@ -4,7 +4,7 @@
 ![export](https://i.imgur.com/XvPMGPo.png)
 
 ## What it does:
-- This allows exports or imports WickHunter settings.
+- This script allows user to export or import WickHunter settings.
 
 ## Instructions:
 1. Place the script anywhere.
