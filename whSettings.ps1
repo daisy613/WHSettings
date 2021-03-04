@@ -4,6 +4,7 @@
 write-host "`n"
 write-host "======= Daisy's WH Settings Export/Import Script =======" -f "Cyan"
 
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 if(!(Get-Module -name "PSSQLite")) {
     Install-Module PSSQLite
     Import-Module PSSQLite
