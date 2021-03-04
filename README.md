@@ -1,4 +1,5 @@
-# whSettings
+# WhSettings
+(from [WH scripts collection](https://github.com/daisy613/wickHunter-scripts))
 
 ![export](https://i.imgur.com/jHFs9yu.png)
 ![export](https://i.imgur.com/XvPMGPo.png)
