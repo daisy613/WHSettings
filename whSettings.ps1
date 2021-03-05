@@ -31,6 +31,7 @@ if ($mode -eq "1") {
     write-host "DB File: $($dataSource)" -f "Green"
     $settingsFile = (Split-Path $dataSource) + "\settingsExport.json"
 
+    # $object = New-Object System.Collections.ArrayList
     ### export settings to file
     $object = [PSCustomObject]@{
         ApiSettings          = Invoke-SqliteQuery -DataSource $dataSource -Query "SELECT * FROM ApiSettings"
@@ -41,7 +42,7 @@ if ($mode -eq "1") {
     }
     if (test-path $settingsFile) { cp $settingsFile ($settingsFile + ".bak") -Confirm:$false -force }
     if ($object) {
-        ($object | ConvertTo-Json) | sc $settingsFile -force
+        ( $object | ConvertTo-Json ) | sc $settingsFile -force
         write-host "Settings exported to $($settingsFile)" -f "Green"
     }
     else { write-host "Found no settings data to export! Try again please." -f "Red" ; sleep 3 ; exit}
@@ -56,17 +57,31 @@ if ($mode -eq "2") {
 
     ### import settings from file
     $object = (gc $settingsFile | ConvertFrom-Json)
+    ### the following is necessary because convertFrom-json loses the dataTypes for Double
+    $object.DcaSettings | % { $_.PercentBuy = [double] $_.PercentBuy }
+    $object.DcaSettings | % { $_.PercentFromAverage = [double] $_.PercentFromAverage }
+    $object.DcaSettings | % { $_.PercentTakeProfit = [double] $_.PercentTakeProfit }
+    $object.StrategySettings | % { $_.PercentBuy = [double] $_.PercentBuy }
+    $object.StrategySettings | % { $_.PercentTakeProfit = [double] $_.PercentTakeProfit }
+    $object.StrategySettings | % { $_.LiquidationSize = [double] $_.LiquidationSize }
+    $object.StrategySettings | % { $_.LongVWAPPercent = [double] $_.LongVWAPPercent }
+    $object.StrategySettings | % { $_.ShortVWAPPercent = [double] $_.ShortVWAPPercent }
+    $object.StrategySettings | % { $_.MaxAllocationPerPair = [double] $_.MaxAllocationPerPair }
+    $object.StrategySettings | % { $_.IsolationMode = [double] $_.IsolationMode }
+    $object.StrategySettings | % { $_.StopLoss = [double] $_.StopLoss }
+    $object.StrategySettings | % { $_.MinVolume = [double] $_.MinVolume }
+    $object.StrategySettings | % { $_.MaxVolume = [double] $_.MaxVolume }
 
     write-host "Backing up your current WH storage.db..." -f "Yellow"
     cp $dataSource "$($dataSource).bak" -force
 
     $query = 'DROP TABLE IF EXISTS "DcaSettings"; CREATE TABLE IF NOT EXISTS "DcaSettings" ( "Batch" TEXT NOT NULL, "Symbol" TEXT NOT NULL, "Range" INTEGER NOT NULL, "PercentFromAverage" NUMBER NOT NULL, "PercentBuy" NUMBER NOT NULL, "NumberOfBuys" NUMBER NOT NULL, "PercentTakeProfit" NUMBER NOT NULL ); DROP TABLE IF EXISTS "ApiSettings"; CREATE TABLE IF NOT EXISTS "ApiSettings" ( "IsReal" INTEGER NOT NULL, "RealApiKey" TEXT NOT NULL, "RealApiSecret" TEXT NOT NULL, "TestnetApiKey" TEXT NOT NULL, "TestnetApiSecret" TEXT NOT NULL ); DROP TABLE IF EXISTS "Instrument"; CREATE TABLE IF NOT EXISTS "Instrument" ( "Symbol" TEXT NOT NULL, "IsPermitted" INTEGER NOT NULL, "IsNonDeaultSettigs" INTEGER NOT NULL) ; DROP TABLE IF EXISTS "StrategySettings"; CREATE TABLE IF NOT EXISTS "StrategySettings" ( "Batch" TEXT NOT NULL, "Symbol" TEXT NOT NULL, "PercentBuy" NUMBER NOT NULL, "Margin" TEXT NOT NULL, "Leverage" INTEGER NOT NULL, "PercentTakeProfit" NUMBER NOT NULL, "LiquidationSize" NUMBER NOT NULL, "LongVWAPPercent" NUMBER NOT NULL, "ShortVWAPPercent" NUMBER NOT NULL, "MaxPairOpen" INTEGER NOT NULL, "MaxAllocationPerPair" NUMBER NOT NULL, "IsolationMode" NUMBER NOT NULL, "StopLoss" NUMBER NOT NULL, "MinVolume" NUMBER NOT NULL, "MaxVolume" NUMBER NOT NULL, "VwapTimeFrame" TEXT NOT NULL, "VwapPeriod" INTEGER NOT NULL ); DROP TABLE IF EXISTS "DiscordNotifications"; CREATE TABLE IF NOT EXISTS "DiscordNotifications" ( "WebHookAddress" TEXT NOT NULL, "TradeOpenedNotification" INTEGER NOT NULL, "DCABuysNotification" INTEGER NOT NULL, "TradeClosedNotification" INTEGER NOT NULL, "IsolationModeEngagedNotification" INTEGER NOT NULL, "MaxAllocationOnPairNotification" INTEGER NOT NULL, "MaterialErrorNotification" INTEGER NOT NULL ); '
     if ($object) { Invoke-SqliteQuery -DataSource $dataSource -Query $query }
-    else { write-host "Found no settings data to import! Try again please." -f "Red" ; sleep 3 ; exit}
+    else {write-host "Found no settings data to import! Try again please." -f "Red" ; sleep 3 ; exit}
 
-    $props = $object.PSObject.Properties.name
+    $props = ($object | Get-Member -MemberType Properties).name
     foreach ($item in $props) {
-        Invoke-SQLiteBulkCopy -DataTable ($object.$item |  Out-DataTable) -DataSource $dataSource -Table $item -NotifyAfter 1000 -Confirm:$false
+        Invoke-SQLiteBulkCopy -DataTable ($object.$item | Out-DataTable) -DataSource $dataSource -Table $item -NotifyAfter 1000 -Confirm:$false
     }
     write-host "Settings imported to $($dataSource)" -f "Green"
 }
