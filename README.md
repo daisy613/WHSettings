@@ -1,8 +1,8 @@
 # WHSettings
 (from [WH scripts collection](https://github.com/daisy613/wickHunter-scripts))
 
-![export](https://i.imgur.com/slBnQax.png)
-![import](https://i.imgur.com/2yaDeuq.png)
+![export](https://i.imgur.com/slBnQax.png?1)
+![import](https://i.imgur.com/2yaDeuq.png?1)
 
 ## What it does:
 - This script allows user to export or import WickHunter settings, or just coins lists.
