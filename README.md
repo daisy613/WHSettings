@@ -14,5 +14,5 @@
 4. Profit!
 
 ## Donations/Tips:
-- USDT (TRC20): TWhjv6ita4Y1i2xevTjxgB6g92yZLpkTwv
-- BTC: 13nsGbe7A7K1SR2KpJHRPH9eArKf823T9o
+- USDT (TRC20): `TWhjv6ita4Y1i2xevTjxgB6g92yZLpkTwv`
+- BTC: `13nsGbe7A7K1SR2KpJHRPH9eArKf823T9o`
